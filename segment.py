@@ -3,19 +3,16 @@ import glob
 import re
 
 import numpy
-import skimage.io
 
 import config
 import util
-
-EMPTY=255
 
 def components(arr):
     '''Finds connected components of 2d array. Returns (mask,component_number) where:
     mask: 2d array of the same size, where non-empty cell is marked by corresponding component number
     component_number: number of connected components'''
     def empty(k):
-        return k == EMPTY
+        return k > 0.99
     def dfs(x,y):
         #check if (x,y) is inside array
         if(not (0 <= x and x < arr.shape[0] and 0 <= y and y < arr.shape[1])):
@@ -138,7 +135,7 @@ def extract_features():
 
     def extract_single(image_file):
         captcha = re.match("(.*)\.gif",os.path.basename(image_file)).group(1)
-        image = skimage.io.imread(image_file)
+        image = util.read_grey_image(image_file)
         return image_to_features(image,captcha)
 
     X,y = list(zip(*list(map(extract_single,images))))

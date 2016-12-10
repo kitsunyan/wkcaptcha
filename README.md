@@ -17,7 +17,7 @@ As tested on Ubuntu 16.04:
 ### Usage
 `python3 wkcaptcha.py [FILE|URL]`
 
-FILE or URL should point to 8-bit gif image to recognize. First run with default parameters can take up to 20-30 minutes to generate learning set and train neural network on it. Subsequent recognition-only runs should take less than second.
+FILE or URL should point to image to recognize. First run with default parameters can take up to 20-30 minutes to generate learning set and train neural network on it. Subsequent recognition-only runs should take less than second.
 
 If considered Wakaba installation is using non-default captcha settings then better recognition rate can be achieved by tweaking captcha generation settings accordingly. It can be done by selecting appropriate values for `CAPTCHA_ROTATION` `CAPTCHA_SCRIBBLE` in `gencaptcha.pl`. Also in achieving balance between high recognition rate and short learning time tweaking of `gen_train_size` `hidden_layer` `maxiter` parameters in `config.py` can be used. To retrain network with new parameters remove `data` directory and rerun.
 

@@ -11,7 +11,6 @@ import segment
 import util
 from util import debug
 
-import skimage.io
 import numpy
 
 def generate_captcha(num):
@@ -80,7 +79,7 @@ def predict_image(NN,image):
 
 def predict_file(image_file):    
     NN = get_saved_classifier()
-    image = skimage.io.imread(image_file)
+    image = util.read_grey_image(image_file)
     return predict_image(NN,image)
 
 if __name__ == '__main__':
