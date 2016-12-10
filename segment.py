@@ -1,0 +1,148 @@
+import os.path
+import glob
+import re
+
+import numpy
+import skimage.io
+
+import config
+import util
+
+EMPTY=255
+
+def components(arr):
+    '''Finds connected components of 2d array. Returns (mask,component_number) where:
+    mask: 2d array of the same size, where non-empty cell is marked by corresponding component number
+    component_number: number of connected components'''
+    def empty(k):
+        return k == EMPTY
+    def dfs(x,y):
+        #check if (x,y) is inside array
+        if(not (0 <= x and x < arr.shape[0] and 0 <= y and y < arr.shape[1])):
+            return
+        #check if (x,y) should be visited
+        if(empty(arr[x][y])):
+            return
+        #check if (x,y) was not already visited
+        if(mask[x][y] != 0):
+            return
+        #visit (x,y)
+        mask[x][y] = component_number
+        dfs(x-1,y)
+        dfs(x+1,y)
+        dfs(x,y+1)
+        dfs(x,y-1)
+        #dfs(x-1,y+1)
+        #dfs(x+1,y+1)
+        #dfs(x-1,y-1)
+        #dfs(x+1,y-1)
+
+    #start_points = []
+    mask = numpy.zeros(shape=arr.shape,dtype=numpy.uint8)
+    component_number = 0
+    for y in range(arr.shape[1]):
+    	for x in range(arr.shape[0]):        
+            if( (not empty(arr[x][y])) and (mask[x][y] == 0)):
+                component_number += 1
+                dfs(x,y)
+                #start_points.append((x,y))                
+    return (mask,component_number)
+
+def box_coordinates(mask,num_of_components):
+    '''Finds rectangulars in which cells located in one connected component can be placed.
+     Returns list of 4-tuples in (x1,x2,y1,y2) format'''
+    def x1(m):
+        for x in range(mask.shape[0]):
+            for y in range(mask.shape[1]):
+                if(mask[x][y] == m):
+                    return x
+
+    def x2(m):
+        for x in reversed(range(mask.shape[0])):
+            for y in range(0,mask.shape[1]):
+                if(mask[x][y] == m):
+                    return x
+
+    def y1(m):
+        for y in range(mask.shape[1]):
+            for x in range(mask.shape[0]):
+                if(mask[x][y] == m):
+                    return y
+
+    def y2(m):
+        for y in reversed(range(mask.shape[1])):
+            for x in range(mask.shape[0]):
+                if(mask[x][y] == m):
+                    return y
+                    
+    boxes = []
+    for m in range(1,num_of_components+1):
+        boxes.append((x1(m),x2(m),y1(m),y2(m)))
+    return boxes
+
+def cut_boxes(mask,boxes):
+    '''Cuts rectangualar from 2d array containing elements from corresponding connected component only'''
+    cutted = []
+    for c in range(len(boxes)):
+        x1,x2,y1,y2 = boxes[c]
+        box = numpy.zeros(shape=(x2-x1+1,y2-y1+1),dtype=numpy.uint8)
+        for x in range(x1,x2+1):
+            for y in range(y1,y2+1):
+                #c-th box contains (c+1)th component
+                if(mask[x][y] == c+1):
+                    box[x-x1][y-y1] = 1
+        cutted.append(box)
+    return cutted
+
+def segment_image(image):
+	'''Segments image into rectangular parts, each containing connected component'''
+	mask,num_of_components = components(image)
+	box_coord = box_coordinates(mask,num_of_components)
+	segments = cut_boxes(mask,box_coord)
+	return segments
+
+def var_to_fixed(v_sgm):
+	'''Converts variable size 2d segment of characters into centered fixed size 1d segment'''
+	h_v = v_sgm.shape[0]
+	w_v = v_sgm.shape[1]
+	assert(config.sample_h > h_v)
+	assert(config.sample_w > w_v)
+	shift_h = int((config.sample_h - h_v)/2)
+	shift_w = int((config.sample_w - w_v)/2)
+	f_sgm = numpy.zeros(shape=(config.sample_h,config.sample_w),dtype=numpy.uint8)
+	for i in range(h_v):
+		for j in range(w_v):
+			f_sgm[i+shift_h][j+shift_w]=v_sgm[i][j]
+	return f_sgm.flatten()
+
+def filter_dots(image_segments):
+    '''filtering out dots over "i" and "j" letters'''
+    return list(filter(lambda x: x.shape[0]>5,image_segments))
+
+def image_to_features(image,captcha):
+    '''Extracts feature and label matrix from image.'''
+    image_segments = segment_image(image)   
+    image_segments = filter_dots(image_segments)
+    if(len(captcha) != len(image_segments)):
+        return (numpy.zeros((0,config.sample_h*config.sample_w),dtype=numpy.uint8),numpy.array([],dtype=numpy.uint8))
+    X=numpy.array(list(map(var_to_fixed,image_segments)))   
+    y = numpy.array(list(map(lambda c:ord(c)-ord('a'),captcha)))
+    return (X,y)    
+
+def extract_features():
+    '''Extract features from all labeled images.'''
+    image_dir = util.get_image_dir()
+    images = glob.glob(image_dir+"/*.gif")
+    characters = []
+    var_segments = []
+
+    def extract_single(image_file):
+        captcha = re.match("(.*)\.gif",os.path.basename(image_file)).group(1)
+        image = skimage.io.imread(image_file)
+        return image_to_features(image,captcha)
+
+    X,y = list(zip(*list(map(extract_single,images))))
+    #return X,y
+    X = numpy.concatenate(X,axis=0)
+    y = numpy.concatenate(y,axis=0)
+    return (X,y)
