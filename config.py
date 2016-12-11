@@ -23,4 +23,3 @@ gen_train_size = 10000
 hidden_layer = 100
 #maximum number of learning iterations
 maxiter = 300
-

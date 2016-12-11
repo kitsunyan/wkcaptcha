@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+import numpy
+
 import sys
 import os
 import re
@@ -12,7 +14,6 @@ import util
 from util import debug
 import test
 
-import numpy
 
 def generate_captcha(num):
     '''Generates labeled images using original captcha perl script from wakaba.'''

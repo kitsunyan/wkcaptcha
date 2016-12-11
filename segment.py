@@ -1,8 +1,8 @@
+import numpy
+
 import os.path
 import glob
 import re
-
-import numpy
 
 import config
 import util
