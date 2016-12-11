@@ -10,6 +10,7 @@ import neural
 import segment
 import util
 from util import debug
+import test
 
 import numpy
 
@@ -61,8 +62,9 @@ def get_saved_classifier():
     debug("Network coefficients are not found. Training new neural network.")
     neural_classifier = neural.train_network(X,y)
     numpy.save(data_dir+"/"+config.network_name+".npy",neural_classifier.weights)
-    #debug("Doing internal accuracy test.")
-    #debug("Accuracy on generated set: {}".format(test.selfcheck()))
+    debug("Selfchecking full captcha files.")
+    accuracy = test.check_labeled_dir(neural_classifier,util.get_image_dir())
+    debug("Accuracy on generated set: {}".format(accuracy,limit=100))
     return neural_classifier
 
 def predict_image(NN,image):
@@ -77,13 +79,13 @@ def predict_image(NN,image):
             captcha += (chr(ord('a')+neural.one_vs_all_to_class_number(NN.predict(X))))
     return captcha
 
-def predict_file(image_file):    
-    NN = get_saved_classifier()
+def predict_file(NN,image_file):    
     image = util.read_grey_image(image_file)
     return predict_image(NN,image)
 
 if __name__ == '__main__':
     if(len(sys.argv) > 1):
-        print(predict_file(sys.argv[1]))
+        NN = get_saved_classifier()
+        print(predict_file(NN,sys.argv[1]))
     else:
         print("Usage: wkcaptcha.py [FILE|URL]")
