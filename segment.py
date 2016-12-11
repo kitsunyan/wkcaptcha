@@ -34,15 +34,13 @@ def components(arr):
         #dfs(x-1,y-1)
         #dfs(x+1,y-1)
 
-    #start_points = []
     mask = numpy.zeros(shape=arr.shape,dtype=numpy.uint8)
     component_number = 0
     for y in range(arr.shape[1]):
-    	for x in range(arr.shape[0]):        
+        for x in range(arr.shape[0]):        
             if( (not empty(arr[x][y])) and (mask[x][y] == 0)):
                 component_number += 1
-                dfs(x,y)
-                #start_points.append((x,y))                
+                dfs(x,y)                
     return (mask,component_number)
 
 def box_coordinates(mask,num_of_components):
@@ -91,35 +89,45 @@ def cut_boxes(mask,boxes):
         cutted.append(box)
     return cutted
 
-def segment_image(image):
-	'''Segments image into rectangular parts, each containing connected component'''
-	mask,num_of_components = components(image)
-	box_coord = box_coordinates(mask,num_of_components)
-	segments = cut_boxes(mask,box_coord)
-	return segments
+def filter_dots(shape,box_coord):
+    '''filtering out dots over "i" and "j" letters by replacing with empyt box'''
+    def is_dot(z):
+        return (z[1]-z[0])+1 <= config.dot_size and z[1] < shape[0]*0.5
+    return list(map(lambda z: (0,0,0,0) if is_dot(z) else z,box_coord))
 
-def var_to_fixed(v_sgm):
-	'''Converts variable size 2d segment of characters into centered fixed size 1d segment'''
-	h_v = v_sgm.shape[0]
-	w_v = v_sgm.shape[1]
-	assert(config.sample_h > h_v)
-	assert(config.sample_w > w_v)
-	shift_h = int((config.sample_h - h_v)/2)
-	shift_w = int((config.sample_w - w_v)/2)
-	f_sgm = numpy.zeros(shape=(config.sample_h,config.sample_w),dtype=numpy.uint8)
-	for i in range(h_v):
-		for j in range(w_v):
-			f_sgm[i+shift_h][j+shift_w]=v_sgm[i][j]
-	return f_sgm.flatten()
-
-def filter_dots(image_segments):
+def filter_dots2(image_segments):
     '''filtering out dots over "i" and "j" letters'''
     return list(filter(lambda x: x.shape[0]>5,image_segments))
+
+def filter_nulls(segments):
+    return list(filter(lambda x: x.shape[0] > 1,segments))
+
+def segment_image(image):
+    '''Segments image into rectangular parts, each containing connected component'''
+    mask,num_of_components = components(image)
+    box_coord = box_coordinates(mask,num_of_components)
+    box_coord = filter_dots(image.shape,box_coord)
+    segments = cut_boxes(mask,box_coord)
+    segments = filter_nulls(segments)
+    return segments
+
+def var_to_fixed(v_sgm):
+    '''Converts variable size 2d segment of characters into centered fixed size 1d segment'''
+    h_v = v_sgm.shape[0]
+    w_v = v_sgm.shape[1]
+    assert(config.sample_h > h_v)
+    assert(config.sample_w > w_v)
+    shift_h = int((config.sample_h - h_v)/2)
+    shift_w = int((config.sample_w - w_v)/2)
+    f_sgm = numpy.zeros(shape=(config.sample_h,config.sample_w),dtype=numpy.uint8)
+    for i in range(h_v):
+        for j in range(w_v):
+            f_sgm[i+shift_h][j+shift_w]=v_sgm[i][j]
+    return f_sgm.flatten()
 
 def image_to_features(image,captcha):
     '''Extracts feature and label matrix from image.'''
     image_segments = segment_image(image)   
-    image_segments = filter_dots(image_segments)
     if(len(captcha) != len(image_segments)):
         return (numpy.zeros((0,config.sample_h*config.sample_w),dtype=numpy.uint8),numpy.array([],dtype=numpy.uint8))
     X=numpy.array(list(map(var_to_fixed,image_segments)))   

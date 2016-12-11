@@ -69,7 +69,7 @@ def get_saved_classifier():
 
 def predict_image(NN,image):
     image_segments=segment.segment_image(image)
-    image_segments=segment.filter_dots(image_segments)
+    #image_segments=segment.filter_dots(image_segments)
     captcha = ""
     for sgm in image_segments:
         if(sgm.shape[1] >= config.sample_w):
