@@ -6,7 +6,7 @@ seed = 34
 sample_h = 30
 sample_w = 30
 #dot size over 'i' 'j' characters
-dot_size = 5
+dot_size = 6
 #regularization parameter to prevent overfitting
 reg = 1
 #range of values of weights in initial random initialization

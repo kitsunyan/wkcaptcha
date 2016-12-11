@@ -1,7 +1,7 @@
 
 #Changed for more challange
 use constant CAPTCHA_HEIGHT => 18;
-use constant CAPTCHA_SCRIBBLE => 0.9;
+use constant CAPTCHA_SCRIBBLE => 1;
 #use constant CAPTCHA_SCRIBBLE => 0.2;
 use constant CAPTCHA_SCALING => 0.15;
 #use constant CAPTCHA_ROTATION => 0.3;

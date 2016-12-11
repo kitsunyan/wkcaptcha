@@ -95,10 +95,6 @@ def filter_dots(shape,box_coord):
         return (z[1]-z[0])+1 <= config.dot_size and z[1] < shape[0]*0.5
     return list(map(lambda z: (0,0,0,0) if is_dot(z) else z,box_coord))
 
-def filter_dots2(image_segments):
-    '''filtering out dots over "i" and "j" letters'''
-    return list(filter(lambda x: x.shape[0]>5,image_segments))
-
 def filter_nulls(segments):
     return list(filter(lambda x: x.shape[0] > 1,segments))
 
