@@ -29,7 +29,7 @@ def check_labeled_dir(NN,dir,limit=100,shift=0):
 		captcha = re.match("(.*)\.gif",os.path.basename(image_file)).group(1)
 		if(captcha == captcha_p):
 			recognized += 1
-		if(total > limit):
+		if(total >= limit):
 			break
 	return recognized/total
 
