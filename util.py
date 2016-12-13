@@ -21,4 +21,7 @@ def read_grey_image(image_file):
     #Convert to float format
     if numpy.dtype('uint8') == image.dtype:
         image = image/255
+    #Convert to 2 bit image
+    f = numpy.vectorize(lambda x: 1 if x > 0.99 else 0)
+    image = f(image)
     return image

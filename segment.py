@@ -12,7 +12,7 @@ def components(arr):
     mask: 2d array of the same size, where non-empty cell is marked by corresponding component number
     component_number: number of connected components'''
     def empty(k):
-        return k > 0.99
+        return k == 1
     def dfs(x,y):
         #check if (x,y) is inside array
         if(not (0 <= x and x < arr.shape[0] and 0 <= y and y < arr.shape[1])):
