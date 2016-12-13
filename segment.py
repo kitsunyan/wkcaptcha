@@ -6,6 +6,7 @@ import re
 
 import config
 import util
+import split
 
 def components(arr):
     '''Finds connected components of 2d array. Returns (mask,component_number) where:
@@ -147,3 +148,16 @@ def extract_features():
     X = numpy.concatenate(X,axis=0)
     y = numpy.concatenate(y,axis=0)
     return (X,y)
+
+def split_segments(image_segments):
+    '''Splitting of crossint characters.
+    image_segments: list of character segments
+    return value: list of splitted characters'''
+    image_segments_2 = []
+    for segment in image_segments:
+            if(segment.shape[1] >= config.double_character_width):
+                splitted = split.split_joint(segment, letters = 2)
+                image_segments_2 += splitted
+            else:
+                image_segments_2.append(segment)
+    return image_segments_2

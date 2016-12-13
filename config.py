@@ -7,6 +7,8 @@ sample_h = 30
 sample_w = 30
 #dot size over 'i' 'j' characters
 dot_size = 6
+#minimum width when segment regarded as containing crossing characters
+double_character_width = 18
 #regularization parameter to prevent overfitting
 reg = 1
 #range of values of weights in initial random initialization

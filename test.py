@@ -2,6 +2,7 @@
 import glob
 import os.path
 import re
+import sys
 
 import wkcaptcha
 from util import debug
@@ -17,7 +18,7 @@ def recognize_and_rename(dir):
         captcha_p = wkcaptcha.predict_file(image_file)
         os.rename(image_file,dir +"/"+captcha_p+".gif")
 
-def check_labeled_dir(NN,dir,limit=100,shift=0):
+def check_labeled_dir(NN,dir,limit=None,shift=0):
     '''Checking accuracy on <captcha>.gif files.'''
     total = 0
     recognized = 0
@@ -30,13 +31,12 @@ def check_labeled_dir(NN,dir,limit=100,shift=0):
         captcha = re.match("(.*)\.gif",os.path.basename(image_file)).group(1)
         if(captcha == captcha_p):
             recognized += 1
-        if(total >= limit):
+        if(limit and total >= limit):
             break
     return recognized/total
 
-def selfcheck():
-    return check_labeled_dir(wkcaptcha.get_saved_classifier(),util.get_image_dir(),limit=100)
-
 if __name__ == '__main__':
-    debug("Selfchecking full captcha files.")
-    debug("Accuracy on generated set: {}".format(selfcheck()))
+    if(len(sys.argv) > 1):
+        debug("Accuracy on captcha in {} directory: {}".format(sys.argv[1], check_labeled_dir(wkcaptcha.get_saved_classifier(),sys.argv[1])))
+    else:
+        debug("Accuracy on generated set: {}".format(check_labeled_dir(wkcaptcha.get_saved_classifier(),util.get_image_dir(),limit=100)))
