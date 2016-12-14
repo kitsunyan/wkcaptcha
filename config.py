@@ -10,12 +10,15 @@ dot_size = 6
 #minimum width when segment regarded as containing crossing characters
 double_character_width = 18
 #regularization parameter to prevent overfitting
+use_grammar = True
+#defines if character with less than max probability considered still relevant (should be number in 0..1)
+uncertainty_coefficient = 0.25
+
 reg = 1
 #range of values of weights in initial random initialization
 w_range = 0.1
 #method for scipy.optimize.minimize
 method = "CG"
-
 #Tweak this parameters for optimal results
 #Also consider CAPTCHA_SCRIBBLE and CAPTCHA_ROTATION in gencaptcha.pl
 

@@ -10,6 +10,7 @@ import subprocess
 import config 
 import neural
 import segment
+import grammar
 import util
 from util import debug
 import test
@@ -80,9 +81,50 @@ def predict_image(NN,image):
             captcha += (chr(ord('a')+neural.one_vs_all_to_class_number(NN.predict(X))))
     return captcha
 
+def predict_image_many(NN,image):
+    '''Give many uncertain variants with probabilities.
+    Return format: list of (captcha,probability)'''
+    def product(captchas,chars):
+        #print(chars)
+        if len(chars) == 1:
+            for n in range(len(captchas)):
+                captchas[n]=(captchas[n][0]+chars[0][0],captchas[n][1])
+            return captchas
+        new_captchas = []
+        for captcha in captchas:
+            for char in chars:
+                new_captchas.append((captcha[0]+char[0],captcha[1]*char[1]))
+        return new_captchas
+
+
+    image_segments=segment.segment_image(image)
+    image_segments=segment.split_segments(image_segments)
+    captchas = [("",1)]
+    for sgm in image_segments:
+        if(sgm.shape[1] >= config.sample_w):
+            next_chars = ["__"]
+        else:
+            X=segment.var_to_fixed(sgm)
+            P = NN.predict(X)
+            next_chars = [ (t[1],t[2]) for t in list(zip(P[0]>max(P[0])*config.uncertainty_coefficient,[chr(n+ord('a')) for n in range(26)],P[0])) if t[0] ]
+        captchas = product(captchas,next_chars)
+
+    return captchas
+
+
 def predict_file(NN,image_file):    
     image = util.read_grey_image(image_file)
-    return predict_image(NN,image)
+    if config.use_grammar:
+        captchas = predict_image_many(NN,image)
+        if(len(captchas)>1):
+            captchas = list(filter(lambda c:grammar.wakaba_accept(c[0]),captchas))
+        if(len(captchas)>0):
+            captcha = max(captchas,key=lambda x:x[1])[0]
+        else:
+            captcha = predict_image(NN,image)
+    else:
+        captcha = predict_image(NN,image)
+    return captcha
 
 if __name__ == '__main__':
     if(len(sys.argv) > 1):
