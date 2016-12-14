@@ -78,7 +78,7 @@ def predict_image(NN,image):
             captcha += "__"
         else:
             X=segment.var_to_fixed(sgm)            
-            captcha += (chr(ord('a')+neural.one_vs_all_to_class_number(NN.predict(X))))
+            captcha += (chr(ord(config.first_character)+neural.one_vs_all_to_class_number(NN.predict(X))))
     return captcha
 
 def predict_image_many(NN,image):
@@ -106,7 +106,7 @@ def predict_image_many(NN,image):
         else:
             X=segment.var_to_fixed(sgm)
             P = NN.predict(X)
-            next_chars = [ (t[1],t[2]) for t in list(zip(P[0]>max(P[0])*config.uncertainty_coefficient,[chr(n+ord('a')) for n in range(26)],P[0])) if t[0] ]
+            next_chars = [ (t[1],t[2]) for t in list(zip(P[0]>max(P[0])*config.uncertainty_coefficient,[chr(n+ord(config.first_character)) for n in range(26)],P[0])) if t[0] ]
         captchas = product(captchas,next_chars)
 
     return captchas

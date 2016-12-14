@@ -128,7 +128,7 @@ def image_to_features(image,captcha):
     if(len(captcha) != len(image_segments)):
         return (numpy.zeros((0,config.sample_h*config.sample_w),dtype=numpy.uint8),numpy.array([],dtype=numpy.uint8))
     X=numpy.array(list(map(var_to_fixed,image_segments)))   
-    y = numpy.array(list(map(lambda c:ord(c)-ord('a'),captcha)))
+    y = numpy.array(list(map(lambda c:ord(c)-ord(config.first_character),captcha)))
     return (X,y)    
 
 def extract_features():

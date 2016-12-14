@@ -36,7 +36,7 @@ def get_terminal(rule):
 
 def accept(grammar,word,string):
     '''grammar: as in example
-    word: word of grammar to match with
+    word: grammar pattern to match with
     string: string to accept against word pattern'''
     rules = splitted(word)
     if(len(rules)==1):
