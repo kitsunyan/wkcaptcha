@@ -7,7 +7,7 @@ import re
 import glob
 import subprocess
 
-import config 
+import config
 import neural
 import segment
 import grammar
@@ -40,11 +40,11 @@ def get_saved_classifier():
     #Trying to load saved neural network coefficients
     if os.path.exists(data_dir+"/"+config.network_name+".npy"):
         input_layer = config.sample_h * config.sample_w
-        outer_layer = config.character_number    
+        outer_layer = config.character_number
         neural_classifier = neural.NeuralClassfier(input_layer,config.hidden_layer,outer_layer,config.reg,random_seed=config.seed)
         neural_classifier.weights = numpy.load(data_dir+"/"+config.network_name+".npy")
         return neural_classifier
-    
+
     #Trying to load saved training data
     if(os.path.exists(data_dir+"/X.npy") and os.path.exists(data_dir+"/y.npy")):
         X=numpy.load(data_dir+"/X.npy")
@@ -65,8 +65,8 @@ def get_saved_classifier():
     neural_classifier = neural.train_network(X,y)
     numpy.save(data_dir+"/"+config.network_name+".npy",neural_classifier.weights)
     debug("Selfchecking full captcha files.")
-    accuracy = test.check_labeled_dir(neural_classifier,util.get_image_dir())
-    debug("Accuracy on generated set: {}".format(accuracy,limit=100))
+    accuracy = test.check_labeled_dir(neural_classifier,util.get_image_dir(),limit=100)
+    debug("Accuracy on generated set: {}".format(accuracy))
     return neural_classifier
 
 def predict_image(NN,image):
@@ -77,7 +77,7 @@ def predict_image(NN,image):
         if(sgm.shape[1] >= config.sample_w):
             captcha += "__"
         else:
-            X=segment.var_to_fixed(sgm)            
+            X=segment.var_to_fixed(sgm)
             captcha += (chr(ord(config.first_character)+neural.one_vs_all_to_class_number(NN.predict(X))))
     return captcha
 
@@ -112,7 +112,7 @@ def predict_image_many(NN,image):
     return captchas
 
 
-def predict_file(NN,image_file):    
+def predict_file(NN,image_file):
     image = util.read_grey_image(image_file)
     if config.use_grammar:
         captchas = predict_image_many(NN,image)
